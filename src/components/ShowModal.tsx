@@ -8,13 +8,21 @@ import { EditPlant } from './EditPlant'
 export const ShowModal = () => {
   const { type, data } = useAppSelector((state) => state.modal)
 
-  return (
-    <div>
-      {type === 'create plant' ? (
-        <DialogModal title="Create Plant" children={<CreatePlant />} />
-      ) : type === 'edit plant' ? (
-        <DialogModal title="Edit Plant" children={<EditPlant data={data} />} />
-      ) : null}
-    </div>
-  )
+  if (type === 'edit plant' && data) {
+    return (
+      <DialogModal title="Edit Plant">
+        <EditPlant data={data} />
+      </DialogModal>
+    )
+  }
+
+  if (type === 'create plant') {
+    return (
+      <DialogModal title="Create Plant">
+        <CreatePlant />
+      </DialogModal>
+    )
+  }
+
+  return null
 }

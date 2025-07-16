@@ -1,10 +1,11 @@
+import { Plant } from '@/generated/prisma'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 type ModalState = {
   isOpen?: boolean
   type?: string
   size?: 'sm' | 'md' | 'lg' | 'xl' | string
-  data?: any
+  data?: Plant | null
 }
 
 const initialState: ModalState = {
@@ -24,7 +25,7 @@ export const modalSlice = createSlice({
         isOpen?: boolean
         type?: string
         size?: 'sm' | 'md' | 'lg' | 'xl' | string
-        data?: any
+        data?: Plant | null
       }>
     ) => {
       return { ...state, ...action.payload }
