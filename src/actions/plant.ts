@@ -1,93 +1,72 @@
 'use server'
 
-import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { createPlantDb, deletePlantDB, editPlantDb } from '@/lib/prisma/plant'
-import { plantSchema } from '@/schemas/plantSchema'
+import { plantSchema, PlantType } from '@/schemas/plantSchema'
 
-export type PlantFieldErrors = Partial<Record<keyof z.infer<typeof plantSchema>, string[]>>
+export async function createPlant(values: PlantType) {
+  const validatedFields = plantSchema.safeParse(values)
 
-export type PlantStateProps = {
-  message: boolean
-  errors: PlantFieldErrors
-}
-
-export async function createPlant(
-  _: PlantStateProps,
-  formData: FormData
-): Promise<PlantStateProps> {
-  const rawData = Object.fromEntries(formData)
-  const result = plantSchema.safeParse(rawData)
-
-  if (!result.success) {
-    const fieldErrors = result.error.flatten().fieldErrors
-
+  if (!validatedFields.success) {
     return {
-      message: false,
-      errors: fieldErrors,
+      error: 'Invalid fields',
     }
   }
 
   try {
-    await createPlantDb(result.data)
+    await createPlantDb(values)
     revalidatePath('/')
     return {
-      message: true,
-      errors: {},
+      success: true,
     }
   } catch (error) {
     if (error instanceof Error && error.message.toLowerCase().includes('slug already exists')) {
       return {
-        message: false,
-        errors: {
-          name: ['A plant with this name already exists.'],
-        },
+        error: 'A plant with this name already exists.',
       }
     }
 
-    throw error
+    return {
+      error: 'Something went wrong. Please try again.',
+    }
   }
 }
 
-export async function editPlant(
-  id: string,
-  _: PlantStateProps,
-  formData: FormData
-): Promise<PlantStateProps> {
-  const rawData = Object.fromEntries(formData)
-  const result = plantSchema.safeParse(rawData)
+export async function editPlant(id: string, values: PlantType) {
+  const validatedFields = plantSchema.safeParse(values)
 
-  if (!result.success) {
-    const fieldErrors = result.error.flatten().fieldErrors
-
+  if (!validatedFields.success) {
     return {
-      message: false,
-      errors: fieldErrors,
+      error: 'Invalid fields',
     }
   }
 
   try {
-    await editPlantDb(id, result.data)
+    await editPlantDb(id, validatedFields.data)
     revalidatePath('/')
     return {
-      message: true,
-      errors: {},
+      success: true,
     }
   } catch (error) {
     if (error instanceof Error && error.message.toLowerCase().includes('slug already exists')) {
       return {
-        message: false,
-        errors: {
-          name: ['A plant with this name already exists.'],
-        },
+        error: 'A plant with this name already exists.',
       }
     }
 
-    throw error
+    return {
+      error: 'Something went wrong. Please try again.',
+    }
   }
 }
-
 export async function deleteBlog(id: string) {
-  await deletePlantDB(id)
-  revalidatePath('/')
+  try {
+    await deletePlantDB(id)
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    return {
+      error: 'Failed to delete blog. Please try again.',
+    }
+  }
 }

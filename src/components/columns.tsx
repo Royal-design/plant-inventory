@@ -15,11 +15,23 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '@/redux/hook'
 import { setModal } from '@/redux/slice/modalSlice'
 import { deleteBlog } from '@/actions/plant'
+import { toast } from 'sonner'
 
 function ActionsCell({ row }: { row: Row<Plant> }) {
   const router = useRouter()
+
   const dispatch = useAppDispatch()
   const plant = row.original
+
+  const handleDelete = async () => {
+    const res = await deleteBlog(plant.id)
+
+    if (res?.error) {
+      toast.error(res.error)
+    } else {
+      toast.success(`${plant.name} deleted successfully`)
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -47,11 +59,7 @@ function ActionsCell({ row }: { row: Row<Plant> }) {
         <DropdownMenuItem onClick={() => router.push(`/plant/${plant.slug}`)}>
           View
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => deleteBlog.bind(null, plant.id)} asChild>
-          <form action={deleteBlog.bind(null, plant.id)}>
-            <button className="w-full text-left">Delete</button>
-          </form>
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -24,7 +24,10 @@ export const DialogModal = ({ title, children, footer }: ModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && dispatch(closeModal())}>
-      <DialogContent className={`max-w-md w-${size} max-md:w-sm`}>
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className={`max-w-md w-${size} max-md:w-sm`}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription />

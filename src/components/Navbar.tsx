@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { ModeToggle } from './ModeToggle'
+import { UserMenu } from './UserMenu'
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -33,10 +34,12 @@ export const Navbar = () => {
               </Link>
             </Button>
             <ModeToggle />
+            <UserMenu />
           </div>
 
           {/* Mobile Toggle */}
           <div className="flex items-center gap-2 md:hidden">
+            <UserMenu />
             <ModeToggle />
             <Button
               variant="ghost"

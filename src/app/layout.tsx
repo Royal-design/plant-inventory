@@ -5,6 +5,8 @@ import { Navbar } from '@/components/Navbar'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ShowModal } from '@/components/ShowModal'
 import ReduxProvider from '@/redux/ReduxProvider'
+import { Toaster } from 'sonner'
+import { Providers } from './provider'
 
 export const metadata: Metadata = {
   title: 'Auth',
@@ -26,9 +28,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReduxProvider>
-            <Navbar />
-            <ShowModal />
-            {children}
+            <Providers>
+              <Navbar />
+              <ShowModal />
+              {children}
+              <Toaster position="top-center" />
+            </Providers>
           </ReduxProvider>
         </ThemeProvider>
       </body>
