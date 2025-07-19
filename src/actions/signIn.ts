@@ -1,11 +1,10 @@
-// actions/signIn.ts
 'use server'
 
 import { signIn } from '@/lib/auth'
 import { signInSchema, SignInType } from '@/schemas/authSchema'
 import { AuthError } from 'next-auth'
 
-export async function logIn(values: SignInType) {
+export async function logIn(values: SignInType, callbackUrl?: string | null) {
   const validatedFields = signInSchema.safeParse(values)
 
   if (!validatedFields.success) {
@@ -21,6 +20,7 @@ export async function logIn(values: SignInType) {
       email,
       password,
       redirect: false,
+      callbackUrl: callbackUrl || '/',
     })
 
     return { success: true }
@@ -34,6 +34,6 @@ export async function logIn(values: SignInType) {
       }
     }
 
-    throw error
+    return { error: 'Unexpected error occurred!' }
   }
 }

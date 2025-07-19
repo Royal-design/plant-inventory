@@ -27,12 +27,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const { email, password } = validatedFields.data
         const user = await getUserByEmail(email)
+        console.log('user', user)
 
         if (!user || !user.password) {
           throw new Error('No user found with this email.')
         }
 
         const passwordsMatch = await bcrypt.compare(password, user.password)
+        console.log('passwordMatch', passwordsMatch)
+
         if (!passwordsMatch) {
           throw new Error('Incorrect password.')
         }
@@ -41,5 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  
+  pages: {
+    signIn: '/sign-in',
+  },
 })

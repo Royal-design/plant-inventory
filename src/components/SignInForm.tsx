@@ -12,10 +12,14 @@ import { signInSchema, SignInType } from '@/schemas/authSchema'
 import { Socials } from './Socials'
 import { logIn } from '@/actions/signIn'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export function SignInForm() {
   const router = useRouter()
+
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl')
+
   const form = useForm<SignInType>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -27,12 +31,12 @@ export function SignInForm() {
   const isSubmitting = form.formState.isSubmitting
   const onSubmit = async (values: SignInType) => {
     console.log('Submitted:', values)
-    const result = await logIn(values)
+    const result = await logIn(values, callbackUrl)
 
     if (result.success) {
       form.reset()
       toast.success('Logged in successfully!')
-      router.push('/')
+      router.push(callbackUrl || '/')
     }
     if (result?.error) {
       toast.error(result.error)
