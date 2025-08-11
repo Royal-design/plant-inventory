@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormField, FormItem, FormControl, FormLabel, FormMessage } from './ui/form'
 import { register } from '@/actions/register'
 import { toast } from 'sonner'
-import { redirect, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 export function SignUpForm() {
   const router = useRouter()
@@ -23,21 +23,53 @@ export function SignUpForm() {
       password: '',
     },
   })
+
   const isSubmitting = form.formState.isSubmitting
+
   const onSubmit = async (values: RegisterType) => {
     try {
       const result = await register(values)
 
+      // Check if the result is undefined or null (successful redirect case)
+      if (!result) {
+        toast.success('Account created successfully!')
+        form.reset()
+        router.push('/sign-in')
+        return
+      }
+
+      // Handle explicit success response
       if (result.success) {
         toast.success(result.success)
         form.reset()
         router.push('/sign-in')
-      } else if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.error('Unexpected response from server.')
+        return
       }
-    } catch (err) {
+
+      // Handle error response
+      if (result?.error) {
+        toast.error(result.error)
+        return
+      }
+
+      // Handle unexpected response
+      toast.error('Unexpected response from server.')
+    } catch (error) {
+      console.error('Registration error:', error)
+
+      // Check if it's a Next.js redirect (successful case)
+      if (
+        error &&
+        typeof error === 'object' &&
+        'digest' in error &&
+        typeof (error as { digest?: unknown }).digest === 'string' &&
+        (error as { digest: string }).digest.includes('NEXT_REDIRECT')
+      ) {
+        toast.success('Account created successfully!')
+        return
+      }
+
+      // Handle other unexpected errors
       toast.error('Something went wrong. Please try again.')
     }
   }
@@ -47,7 +79,7 @@ export function SignUpForm() {
       <Card className="w-full md:w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Sign up to get started</CardTitle>
-          <CardDescription></CardDescription>
+          <CardDescription>Create your account to access all features</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -95,7 +127,7 @@ export function SignUpForm() {
               />
 
               <Button disabled={isSubmitting} type="submit" className="w-full">
-                {isSubmitting ? 'Registering' : 'Register'}
+                {isSubmitting ? 'Creating account...' : 'Create account'}
               </Button>
 
               <div className="text-center text-sm">

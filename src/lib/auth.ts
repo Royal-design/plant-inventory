@@ -10,41 +10,86 @@ import { getUserByEmail } from '@/data/user'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  session: { strategy: 'jwt' },
   providers: [
-    GitHub,
-    Google,
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    }),
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    }),
     Credentials({
+      name: 'credentials',
       credentials: {
-        email: {},
-        password: {},
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       authorize: async (credentials) => {
-        const validatedFields = signInSchema.safeParse(credentials)
+        console.log('Authorize called with:', { email: credentials?.email })
 
-        if (!validatedFields.success) {
-          throw new Error('Invalid input. Please check your email and password.')
+        try {
+          const validatedFields = signInSchema.safeParse(credentials)
+
+          if (!validatedFields.success) {
+            console.error('Validation failed:', validatedFields.error)
+            return null
+          }
+
+          const { email, password } = validatedFields.data
+          const user = await getUserByEmail(email)
+          console.log('User found:', !!user, user?.email)
+
+          if (!user || !user.password) {
+            console.log('No user found or no password set')
+            return null
+          }
+
+          const passwordsMatch = await bcrypt.compare(password, user.password)
+          console.log('Password match:', passwordsMatch)
+
+          if (!passwordsMatch) {
+            console.log('Password does not match')
+            return null
+          }
+
+          // Return user object without password
+          const { password: _, ...userWithoutPassword } = user
+          console.log('Returning user:', userWithoutPassword)
+          return userWithoutPassword
+        } catch (error) {
+          console.error('Error in authorize:', error)
+          return null
         }
-
-        const { email, password } = validatedFields.data
-        const user = await getUserByEmail(email)
-        console.log('user', user)
-
-        if (!user || !user.password) {
-          throw new Error('No user found with this email.')
-        }
-
-        const passwordsMatch = await bcrypt.compare(password, user.password)
-        console.log('passwordMatch', passwordsMatch)
-
-        if (!passwordsMatch) {
-          throw new Error('Incorrect password.')
-        }
-
-        return user
       },
     }),
   ],
   pages: {
     signIn: '/sign-in',
+    error: '/auth/error',
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = typeof token.id === 'string' ? token.id : String(token.id)
+      }
+      return session
+    },
+  },
+  events: {
+    async signIn(message) {
+      console.log('SignIn event:', message)
+    },
+    async signOut(message) {
+      console.log('SignOut event:', message)
+    },
+  },
+  // debug: process.env.NODE_ENV === 'development',
 })

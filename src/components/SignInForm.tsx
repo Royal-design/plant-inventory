@@ -29,17 +29,52 @@ export function SignInForm() {
   })
 
   const isSubmitting = form.formState.isSubmitting
+
   const onSubmit = async (values: SignInType) => {
     console.log('Submitted:', values)
-    const result = await logIn(values, callbackUrl)
 
-    if (result.success) {
-      form.reset()
-      toast.success('Logged in successfully!')
-      router.push(callbackUrl || '/')
-    }
-    if (result?.error) {
-      toast.error(result.error)
+    try {
+      const result = await logIn(values, callbackUrl)
+
+      // Check if the result is undefined or null (successful redirect case)
+      if (!result) {
+        // This means the redirect happened successfully
+        toast.success('Logged in successfully!')
+        return
+      }
+
+      // Handle explicit success response
+      if (result.success) {
+        form.reset()
+        toast.success('Logged in successfully!')
+        router.push(callbackUrl || '/')
+        return
+      }
+
+      // Handle error response
+      if (result?.error) {
+        toast.error(result.error)
+      }
+    } catch (error) {
+      // This catch block will handle the redirect error from Next.js
+      // When NextAuth redirects successfully, it throws a redirect error
+      console.log('Caught error (likely successful redirect):', error)
+
+      // Check if it's a Next.js redirect (successful case)
+      if (
+        error &&
+        typeof error === 'object' &&
+        'digest' in error &&
+        typeof (error as { digest?: unknown }).digest === 'string' &&
+        (error as { digest: string }).digest.includes('NEXT_REDIRECT')
+      ) {
+        toast.success('Logged in successfully!')
+        return
+      }
+
+      // Handle other unexpected errors
+      console.error('Unexpected error:', error)
+      toast.error('An unexpected error occurred')
     }
   }
 
@@ -83,7 +118,7 @@ export function SignInForm() {
               />
 
               <Button disabled={isSubmitting} type="submit" className="w-full">
-                {isSubmitting ? 'Logging-in' : 'Login'}
+                {isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
 
               <div className="text-center text-sm">

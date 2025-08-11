@@ -19,21 +19,26 @@ export async function logIn(values: SignInType, callbackUrl?: string | null) {
     await signIn('credentials', {
       email,
       password,
-      redirect: false,
-      callbackUrl: callbackUrl || '/',
+      redirectTo: callbackUrl || '/', // Use redirectTo instead of redirect: false
     })
 
+    // This line will not be reached if redirect is successful
     return { success: true }
   } catch (error) {
+    console.error('Login error:', error)
+
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
           return { error: 'Invalid credentials!' }
+        case 'CallbackRouteError':
+          return { error: 'Authentication callback failed!' }
         default:
-          return { error: 'Something went wrong!' }
+          return { error: `Authentication error: ${error.type}` }
       }
     }
 
-    return { error: 'Unexpected error occurred!' }
+    // Re-throw redirect errors (successful case)
+    throw error
   }
 }
