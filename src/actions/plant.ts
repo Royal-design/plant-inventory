@@ -64,7 +64,7 @@ export async function deleteBlog(id: string) {
     await deletePlantDB(id)
     revalidatePath('/')
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: 'Failed to delete blog. Please try again.',
     }

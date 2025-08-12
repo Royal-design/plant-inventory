@@ -14,12 +14,17 @@ export const Socials = () => {
 
   const onClick = (provider: 'google' | 'github') => {
     setIsLoading(provider)
+
+    // Set the pending auth flag BEFORE signing in
+    sessionStorage.setItem('pendingAuth', 'true')
+
     signIn(provider, { callbackUrl }).catch(() => {
       toast.error('Failed to log in')
       setIsLoading(null)
+      // Remove the flag if sign-in fails
+      sessionStorage.removeItem('pendingAuth')
     })
   }
-
   return (
     <div className="mb-4 flex flex-col gap-4">
       <Button

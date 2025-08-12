@@ -7,6 +7,7 @@ import { ShowModal } from '@/components/ShowModal'
 import ReduxProvider from '@/redux/ReduxProvider'
 import { Toaster } from 'sonner'
 import { Providers } from './provider'
+import { AuthSuccess } from '@/components/AuthSuccess'
 
 export const metadata: Metadata = {
   title: 'Auth',
@@ -30,6 +31,7 @@ export default function RootLayout({
           <ReduxProvider>
             <Providers>
               <Navbar />
+              <AuthSuccess />
               <ShowModal />
               {children}
               <Toaster position="top-center" />

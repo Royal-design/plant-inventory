@@ -54,7 +54,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null
           }
 
-          // Return user object without password
+          // Return user object without password but with role
           const { ...userWithoutPassword } = user
           console.log('Returning user:', userWithoutPassword)
           return userWithoutPassword
@@ -72,13 +72,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
+        // Store user data in token
+        token.id = user.id ?? ''
+        token.role = user.role
+        token.email = user.email
+        token.name = user.name
       }
+
+      // For OAuth providers, fetch user data from database if not already present
+      if (token.email && !token.role) {
+        try {
+          const dbUser = await getUserByEmail(token.email as string)
+          if (dbUser) {
+            token.role = dbUser.role
+            token.id = dbUser.id
+          }
+        } catch (error) {
+          console.error('Error fetching user in JWT callback:', error)
+        }
+      }
+
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = typeof token.id === 'string' ? token.id : String(token.id)
+      if (token && session.user) {
+        // Add custom fields to session
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+        session.user.email = token.email as string
+        session.user.name = token.name as string
       }
       return session
     },

@@ -49,12 +49,13 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
 
   return (
     <div className="space-y-4">
+      {/* Search + Add Button */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <Input
           placeholder="Search..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="max-w-sm"
+          className="max-w-sm border-green-200 focus:border-green-400 dark:border-green-800 dark:focus:border-green-500"
         />
         <Button
           onClick={() =>
@@ -65,18 +66,23 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
               })
             )
           }
+          className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-400"
         >
-          + Add Plant{' '}
+          + Add Plant
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      {/* Table */}
+      <div className="rounded-md border border-green-200 dark:border-green-800">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-green-50 dark:bg-green-900/20">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className="font-semibold text-green-700 dark:text-green-400"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -88,9 +94,12 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  className="transition-colors hover:bg-green-50 dark:hover:bg-green-900/20"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-gray-700 dark:text-gray-300">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -98,7 +107,10 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-center text-gray-500 dark:text-gray-400"
+                >
                   No results.
                 </TableCell>
               </TableRow>

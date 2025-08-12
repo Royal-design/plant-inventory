@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { registerSchema, RegisterType } from '@/schemas/authSchema'
 import { getUserByEmail } from '@/data/user'
+import { Role } from '@/generated/prisma'
 
 export async function register(values: RegisterType) {
   const validatedFields = registerSchema.safeParse(values)
@@ -32,6 +33,7 @@ export async function register(values: RegisterType) {
         email,
         name,
         password: hashedPassword,
+        role: Role.USER,
       },
     })
 
