@@ -13,12 +13,29 @@ import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { signOut, useSession } from 'next-auth/react'
 import { toast } from 'sonner'
+import { useState } from 'react'
 
 export function UserMenu() {
   const router = useRouter()
   const { data: session } = useSession()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const user = session?.user
+
+  const handleSignOut = async () => {
+    setIsLoggingOut(true)
+    try {
+      await signOut({
+        callbackUrl: '/sign-in',
+        redirect: true,
+      })
+
+      toast.success('Logged out successfully!')
+    } catch {
+      toast.error('Failed to log out')
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -35,17 +52,8 @@ export function UserMenu() {
         <DropdownMenuLabel>{user?.name ?? 'My Account'}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push('/profile')}>Profile</DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={async () => {
-            try {
-              await signOut()
-              toast.success('Logged out successfully!')
-            } catch (error) {
-              toast.error('Failed to log out')
-            }
-          }}
-        >
-          Logout
+        <DropdownMenuItem onClick={handleSignOut} disabled={isLoggingOut}>
+          {isLoggingOut ? 'Logging out...' : 'Logout'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

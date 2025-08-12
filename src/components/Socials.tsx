@@ -3,28 +3,44 @@
 import { FaGithub, FaGoogle } from 'react-icons/fa'
 import { Button } from './ui/button'
 import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
+import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export const Socials = () => {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
+  const [isLoading, setIsLoading] = useState<string | null>(null)
 
   const onClick = (provider: 'google' | 'github') => {
-    signIn(provider, { callbackUrl })
-      .then(() => toast.success('Logged in successfully!'))
-      .catch(() => toast.error('Failed to log in'))
+    setIsLoading(provider)
+    signIn(provider, { callbackUrl }).catch(() => {
+      toast.error('Failed to log in')
+      setIsLoading(null)
+    })
   }
 
   return (
     <div className="mb-4 flex flex-col gap-4">
-      <Button variant="outline" type="button" className="w-full" onClick={() => onClick('github')}>
+      <Button
+        variant="outline"
+        type="button"
+        className="w-full"
+        onClick={() => onClick('github')}
+        disabled={isLoading !== null}
+      >
         <FaGithub />
-        Login with GitHub
+        {isLoading === 'github' ? 'Signing in...' : 'Login with GitHub'}
       </Button>
-      <Button variant="outline" type="button" className="w-full" onClick={() => onClick('google')}>
+      <Button
+        variant="outline"
+        type="button"
+        className="w-full"
+        onClick={() => onClick('google')}
+        disabled={isLoading !== null}
+      >
         <FaGoogle />
-        Login with Google
+        {isLoading === 'google' ? 'Signing in...' : 'Login with Google'}
       </Button>
       <div className="relative text-center text-sm">
         <span className="bg-card text-muted-foreground relative z-10 px-2">Or continue with</span>

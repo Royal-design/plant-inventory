@@ -38,7 +38,7 @@ export async function register(values: RegisterType) {
     return {
       success: 'Account created successfully! Please sign in.',
     }
-  } catch (error) {
+  } catch {
     return {
       error: 'Something went wrong. Please try again.',
     }

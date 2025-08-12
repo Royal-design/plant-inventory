@@ -55,7 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
 
           // Return user object without password
-          const { password: _, ...userWithoutPassword } = user
+          const { ...userWithoutPassword } = user
           console.log('Returning user:', userWithoutPassword)
           return userWithoutPassword
         } catch (error) {

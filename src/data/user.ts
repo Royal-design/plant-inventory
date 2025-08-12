@@ -7,7 +7,7 @@ export const getUserByEmail = async (email: string) => {
     })
 
     return user
-  } catch (error) {
+  } catch {
     throw new Error('Failed to find user by email')
   }
 }
