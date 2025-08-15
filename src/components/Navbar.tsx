@@ -6,9 +6,13 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { ModeToggle } from './ModeToggle'
 import { UserMenu } from './UserMenu'
+import { usePathname } from 'next/navigation'
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const pathName = usePathname()
+  if (pathName === '/dashboard' || pathName.startsWith('/admin')) return null
 
   return (
     <div className="sticky top-0 z-50 w-full border-b border-green-200/50 bg-white/95 backdrop-blur-2xl dark:border-green-800/30 dark:bg-gray-900/95">

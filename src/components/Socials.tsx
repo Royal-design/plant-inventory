@@ -4,10 +4,31 @@ import { FaGithub, FaGoogle } from 'react-icons/fa'
 import { Button } from './ui/button'
 import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export const Socials = () => {
+// Loading fallback for the Socials component
+function SocialsLoading() {
+  return (
+    <div className="mb-4 flex flex-col gap-4">
+      <Button variant="outline" type="button" className="w-full" disabled>
+        <FaGithub />
+        Loading...
+      </Button>
+      <Button variant="outline" type="button" className="w-full" disabled>
+        <FaGoogle />
+        Loading...
+      </Button>
+      <div className="relative text-center text-sm">
+        <span className="bg-card text-muted-foreground relative z-10 px-2">Or continue with</span>
+        <div className="border-border absolute inset-0 top-1/2 border-t" />
+      </div>
+    </div>
+  )
+}
+
+// Component that uses useSearchParams
+function SocialsContent() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
   const [isLoading, setIsLoading] = useState<string | null>(null)
@@ -25,6 +46,7 @@ export const Socials = () => {
       sessionStorage.removeItem('pendingAuth')
     })
   }
+
   return (
     <div className="mb-4 flex flex-col gap-4">
       <Button
@@ -52,5 +74,14 @@ export const Socials = () => {
         <div className="border-border absolute inset-0 top-1/2 border-t" />
       </div>
     </div>
+  )
+}
+
+// Main component with Suspense boundary
+export const Socials = () => {
+  return (
+    <Suspense fallback={<SocialsLoading />}>
+      <SocialsContent />
+    </Suspense>
   )
 }

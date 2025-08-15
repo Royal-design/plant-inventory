@@ -1,13 +1,10 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 
 export const AuthSuccess = () => {
   const { status } = useSession()
-  const searchParams = useSearchParams()
-  const error = searchParams.get('error')
   const hasShownToast = useRef(false)
 
   useEffect(() => {
@@ -20,13 +17,25 @@ export const AuthSuccess = () => {
         hasShownToast.current = true
       }
     }
+  }, [status])
 
-    // Show error toast
-    if (error && !hasShownToast.current) {
-      toast.error('Failed to log in')
-      hasShownToast.current = true
+  useEffect(() => {
+    // Handle URL-based error reporting
+    if (typeof window !== 'undefined' && !hasShownToast.current) {
+      const urlParams = new URLSearchParams(window.location.search)
+      const error = urlParams.get('error')
+
+      if (error) {
+        toast.error('Failed to log in')
+        hasShownToast.current = true
+
+        // Optional: Clean up the URL by removing the error parameter
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.delete('error')
+        window.history.replaceState({}, '', newUrl.toString())
+      }
     }
-  }, [status, error])
+  }, [])
 
   return null
 }

@@ -11,8 +11,10 @@ import { Form, FormField, FormItem, FormControl, FormLabel, FormMessage } from '
 import { register } from '@/actions/register'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Suspense } from 'react'
 
-export function SignUpForm() {
+// Extract the component content
+function SignUpFormContent() {
   const router = useRouter()
 
   const form = useForm<RegisterType>({
@@ -141,5 +143,24 @@ export function SignUpForm() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Main component with Suspense boundary
+export function SignUpForm() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex w-full flex-col items-center p-6 md:py-4">
+          <Card className="w-full md:w-md">
+            <CardContent className="flex items-center justify-center p-6">
+              <div>Loading...</div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <SignUpFormContent />
+    </Suspense>
   )
 }

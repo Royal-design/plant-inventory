@@ -13,10 +13,11 @@ import { Socials } from './Socials'
 import { logIn } from '@/actions/signIn'
 import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export function SignInForm() {
+// Extract the component that uses useSearchParams
+function SignInFormContent() {
   const router = useRouter()
-
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl')
 
@@ -132,5 +133,24 @@ export function SignInForm() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Main component with Suspense boundary
+export function SignInForm() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex w-full flex-col items-center py-4 max-md:p-6">
+          <Card className="w-full md:w-md">
+            <CardContent className="flex items-center justify-center p-6">
+              <div>Loading...</div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <SignInFormContent />
+    </Suspense>
   )
 }
