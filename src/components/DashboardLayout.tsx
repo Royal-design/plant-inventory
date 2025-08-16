@@ -12,7 +12,7 @@ const sideBar: Record<Role, MenuItem[]> = {
     {
       name: 'Dashboard',
       icon: <LayoutDashboard />,
-      path: '/admin/dashboard',
+      path: '/admin',
     },
     {
       name: 'Users',
@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   // Get user role from session - middleware ensures user is authenticated
-  const userRole: Role = (session?.user as any)?.role || 'USER'
+  const userRole: Role = (session?.user.role as Role) || 'USER'
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">

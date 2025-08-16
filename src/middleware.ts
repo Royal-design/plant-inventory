@@ -1,8 +1,8 @@
-// middleware.ts
 import { Session } from 'next-auth'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { auth } from './lib/auth'
+import { Role } from './types/customType'
 
 interface AuthenticatedRequest extends NextRequest {
   auth: Session | null
@@ -11,6 +11,7 @@ interface AuthenticatedRequest extends NextRequest {
 export default auth((req: AuthenticatedRequest) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
+  const userRole = req.auth?.user?.role as Role
 
   const isAuthRoute =
     nextUrl.pathname.startsWith('/sign-in') ||
@@ -22,17 +23,24 @@ export default auth((req: AuthenticatedRequest) => {
     nextUrl.pathname.startsWith('/profile') ||
     nextUrl.pathname.startsWith('/settings')
 
-  // const isPublicRoute =
-  //   nextUrl.pathname === '/' ||
-  //   nextUrl.pathname.startsWith('/about') ||
-  //   nextUrl.pathname.startsWith('/contact')
+  const isAdminRoute = nextUrl.pathname.startsWith('/admin')
+  const isUserDashboard = nextUrl.pathname.startsWith('/dashboard')
 
+  // Redirect logged-in user from auth pages
   if (isLoggedIn && isAuthRoute) {
     return NextResponse.redirect(new URL('/', nextUrl))
   }
 
-  if (!isLoggedIn && isProtectedRoute) {
+  // Redirect unauthenticated users from protected pages
+  if (!isLoggedIn && (isProtectedRoute || isAdminRoute)) {
     return NextResponse.redirect(new URL('/sign-in', nextUrl))
+  }
+
+  if (isAdminRoute && userRole !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/forbidden', nextUrl))
+  }
+  if (isUserDashboard && userRole !== 'USER') {
+    return NextResponse.redirect(new URL('/forbidden', nextUrl))
   }
 
   return NextResponse.next()
